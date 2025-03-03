@@ -1,8 +1,6 @@
 import smtplib
 
 class AlertManager:
-    def __init__(self):
-        self.email = "security@sentinelguard.com"
 
     def send_alert(self, threat):
         print(f"ALERT: {threat} detected! Notification sent to {self.email}.")
