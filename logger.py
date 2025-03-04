@@ -3,7 +3,7 @@ import os
 
 class Logger:
     def __init__(self, log_file="logs/system.log"):
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        os.makedirs(os.path.dirname(log_file), exist_ok=True) 
         self.log_file = log_file
 
     def log(self, message):
