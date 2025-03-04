@@ -20,7 +20,7 @@ class IncidentDatabase:
             conn.commit()
 
     def add_incident(self, description):
-        with sqlite3.connect(self.db_file) as conn:
+        with sqlite3.connect(self.db_file) as conn: 
             cursor = conn.cursor()
             cursor.execute("INSERT INTO incidents (timestamp, description) VALUES (datetime('now'), ?)", (description,))
             conn.commit()
