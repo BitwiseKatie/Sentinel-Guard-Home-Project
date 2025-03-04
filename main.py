@@ -54,7 +54,7 @@ def main():
             db.add_incident(file)
 
         logger.log("Sleeping for next scan cycle...")
-        time.sleep(60)
+        time.sleep(60) 
 
 if __name__ == "__main__":
     run_api_server()
