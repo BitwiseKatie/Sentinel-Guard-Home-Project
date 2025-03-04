@@ -4,7 +4,7 @@ import hashlib
 class FileMonitor:
     def __init__(self, watch_dir="data"):
         self.watch_dir = watch_dir
-        self.files_hashes = self.get_initial_hashes()
+        self.files_hashes = self.get_initial_hashes() 
 
     def get_initial_hashes(self):
         file_hashes = {}
