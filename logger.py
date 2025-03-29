@@ -4,19 +4,17 @@ from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
 class Logger:
-    def __init__(self, log_file="logs/system.log", max_bytes=5 * 1024 * 1024, backup_count=3):
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    def __init__(self, log_file="logs/system.log", max_bytes=5 * 1024 * 1024, backup_count=5):
         self.log_file = log_file
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
         self.logger = logging.getLogger("HomescannerLogger")
         self.logger.setLevel(logging.INFO)
 
-        formatter = logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
-
-        file_handler = RotatingFileHandler(self.log_file, maxBytes=max_bytes, backupCount=backup_count)
-        file_handler.setFormatter(formatter)
-
-        if not self.logger.hasHandlers():
+        if not self.logger.handlers:
+            formatter = logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
+            file_handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8")
+            file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
 
     def log(self, message, level="info"):
@@ -34,7 +32,7 @@ class Logger:
 
     def read_logs(self, lines=50):
         try:
-            with open(self.log_file, "r") as f:
+            with open(self.log_file, "r", encoding="utf-8") as f:
                 return f.readlines()[-lines:]
-        except FileNotFoundError:
-            return ["Log file not found."]
+        except Exception as e:
+            return [f"Log read error: {e}"]
