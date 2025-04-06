@@ -5,21 +5,9 @@ from datetime import datetime
 
 class NetworkScanner:
     COMMON_PORTS = {
-        21: "FTP",
-        22: "SSH",
-        23: "Telnet",
-        25: "SMTP",
-        53: "DNS",
-        80: "HTTP",
-        110: "POP3",
-        139: "NetBIOS",
-        143: "IMAP",
-        443: "HTTPS",
-        445: "SMB",
-        3306: "MySQL",
-        3389: "RDP",
-        5900: "VNC",
-        8080: "HTTP-Alt"
+        21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP", 53: "DNS",
+        80: "HTTP", 110: "POP3", 139: "NetBIOS", 143: "IMAP", 443: "HTTPS",
+        445: "SMB", 3306: "MySQL", 3389: "RDP", 5900: "VNC", 8080: "HTTP-Alt"
     }
 
     POTENTIAL_THREATS = {
@@ -40,24 +28,29 @@ class NetworkScanner:
         8080: "Unsecured Alt-Web Interface"
     }
 
-    def __init__(self, target="127.0.0.1", ports=None, timeout=1.0):
+    def __init__(self, target="127.0.0.1", ports=None, timeout=1.0, resolve_hostname=True):
         self.target = target
         self.ports = ports if ports else list(self.COMMON_PORTS.keys())
         self.timeout = timeout
+        self.resolve_hostname = resolve_hostname
         self.results = []
+        self.banner_grab_enabled = True
 
     async def scan(self):
+        self.results.clear()
         try:
-            socket.gethostbyname(self.target)
+            if self.resolve_hostname:
+                resolved_ip = socket.gethostbyname(self.target)
+                logging.info(f"Resolved {self.target} to {resolved_ip}")
         except socket.gaierror:
-            logging.error(f"DNS resolution failed for {self.target}")
+            logging.error(f"[Scanner] DNS resolution failed for {self.target}")
             return [{"error": "Unresolved hostname"}]
 
-        logging.info(f"Initiating async scan on {self.target}")
+        logging.info(f"[Scanner] Starting async scan on {self.target}")
         start_time = datetime.utcnow()
         await self._scan_ports()
         duration = (datetime.utcnow() - start_time).total_seconds()
-        logging.info(f"Scan completed in {duration:.2f} seconds")
+        logging.info(f"[Scanner] Scan completed in {duration:.2f} seconds")
         return self.results
 
     async def _scan_ports(self):
@@ -66,25 +59,32 @@ class NetworkScanner:
 
     async def _scan_port(self, port):
         try:
-            reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(self.target, port), timeout=self.timeout
+            conn = await asyncio.wait_for(
+                asyncio.open_connection(self.target, port),
+                timeout=self.timeout
             )
-            banner = await self._grab_banner(reader)
+            reader, writer = conn
+            banner = await self._grab_banner(reader) if self.banner_grab_enabled else ""
             writer.close()
             await writer.wait_closed()
 
             service = self.COMMON_PORTS.get(port, "Unknown")
             threat = self._analyze_threat(port, banner)
+
             self.results.append({
                 "port": port,
                 "service": service,
                 "banner": banner.strip() if banner else "N/A",
-                "threat": threat
+                "threat": threat,
+                "timestamp": datetime.utcnow().isoformat(timespec="seconds")
             })
-        except (asyncio.TimeoutError, ConnectionRefusedError):
-            pass
+
+        except asyncio.TimeoutError:
+            logging.debug(f"[Scanner] Timeout on port {port}")
+        except ConnectionRefusedError:
+            logging.debug(f"[Scanner] Connection refused on port {port}")
         except Exception as e:
-            logging.warning(f"Unexpected error on port {port}: {e}")
+            logging.warning(f"[Scanner] Unexpected error on port {port}: {e}")
 
     async def _grab_banner(self, reader):
         try:
@@ -99,9 +99,29 @@ class NetworkScanner:
             return f"Open port {port}, unknown service"
 
         if banner:
-            banner_lower = banner.lower()
-            if "unauthorized" in banner_lower or "login" in banner_lower:
+            b = banner.lower()
+            if "unauthorized" in b or "login" in b:
                 return f"{base_threat} + Possible weak authentication"
-            if "apache" in banner_lower or "nginx" in banner_lower:
+            if "apache" in b or "nginx" in b or "iis" in b:
                 return f"{base_threat} + Public web stack exposed"
+            if "openssl" in b or "tls" in b:
+                return f"{base_threat} + TLS stack fingerprinted"
         return base_threat
+
+    def export_results(self, file_path):
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                for entry in sorted(self.results, key=lambda x: x["port"]):
+                    line = f"{entry['timestamp']} | {entry['port']}/{entry['service']} | Threat: {entry['threat']} | Banner: {entry['banner']}\n"
+                    f.write(line)
+            logging.info(f"[Scanner] Results exported to {file_path}")
+        except Exception as e:
+            logging.error(f"[Scanner] Failed to export results: {e}")
+
+    def summarize(self):
+        summary = {}
+        for entry in self.results:
+            threat = entry["threat"]
+            summary[threat] = summary.get(threat, 0) + 1
+        return summary
+
