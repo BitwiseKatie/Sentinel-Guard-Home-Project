@@ -4,10 +4,10 @@ from typing import Optional
 
 
 def reverse_dns(ip: str) -> Optional[str]:
-    if not ip:
-        return None
     try:
-        ip_obj = ipaddress.ip_address(ip.strip())
-        return socket.gethostbyaddr(str(ip_obj))[0]
+        ip_clean = ip.strip()
+        ipaddress.ip_address(ip_clean)
+        hostname, _, _ = socket.gethostbyaddr(ip_clean)
+        return hostname
     except (ValueError, socket.herror, socket.gaierror):
         return None
