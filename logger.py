@@ -67,3 +67,4 @@ class Logger:
                     handler.flush()
                 except Exception:
                     pass
+
