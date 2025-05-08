@@ -40,4 +40,3 @@ class LogAnalyzer:
             return False
         except Exception:
             return False
-
