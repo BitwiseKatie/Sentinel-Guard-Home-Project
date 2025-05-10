@@ -37,19 +37,21 @@ def main_loop(components):
         logger.log("Starting scan cycle...", level="info")
 
         try:
-            for monitor, label, handler in [
-                (components["scanner"].scan, "network", "scanner"),
-                (components["analyzer"].analyze_logs, "log", "log_analyzer"),
-                (components["process_monitor"].check_processes, "process", "process_monitor"),
-                (components["file_monitor"].check_files, "filesystem", "file_monitor"),
-                (components["disk_monitor"].check_disk_usage, "disk", "disk_monitor"),
-                (components["user_activity_monitor"].check_new_logins, "account", "user_monitor")
-            ]:
+            scans = [
+                (components["scanner"].scan, "network", "scanner", lambda x: f"Threat detected: {x}"),
+                (components["analyzer"].analyze_logs, "log", "log_analyzer", lambda x: f"Log anomaly detected: {x}"),
+                (components["process_monitor"].check_processes, "process", "process_monitor", lambda x: f"Suspicious process detected: {x}"),
+                (components["file_monitor"].check_files, "filesystem", "file_monitor", lambda x: f"Modified file detected: {x}"),
+                (components["disk_monitor"].check_disk_usage, "disk", "disk_monitor", lambda x: f"Disk warning: {x}"),
+                (components["user_activity_monitor"].check_new_logins, "account", "user_monitor", lambda x: f"New user login detected: {x}")
+            ]
+
+            for monitor, label, source, formatter in scans:
                 for item in monitor():
-                    message = f"{label.capitalize()} issue detected: {item}" if label != "account" else f"New user login detected: {item}"
+                    message = formatter(item)
                     logger.log(message, level="warning")
                     components["alert_manager"].send_alert(message)
-                    components["db"].add_incident(message, type=label, severity="warning", source=handler)
+                    components["db"].add_incident(message, type=label, severity="warning", source=source)
 
             logger.log(components["uptime_monitor"].get_uptime(), level="info")
             logger.log("Scan cycle complete. Sleeping...", level="info")
@@ -62,23 +64,24 @@ def health_check(components):
     logger = components["logger"]
     logger.log("Performing health check...", level="info")
 
-    checks = {
-        "Database": lambda: components["db"].get_connection() is not None,
-        "Scanner": lambda: components["scanner"].scan() is not None,
-        "File Monitor": lambda: components["file_monitor"].check_files() is not None,
-        "Disk Monitor": lambda: components["disk_monitor"].check_disk_usage() is not None
+    tests = {
+        "Database": lambda: components["db"].get_connection(),
+        "Scanner": lambda: components["scanner"].scan(),
+        "File Monitor": lambda: components["file_monitor"].check_files(),
+        "Disk Monitor": lambda: components["disk_monitor"].check_disk_usage()
     }
 
-    for name, check in checks.items():
+    for name, test in tests.items():
         try:
-            logger.log(f"{name} check passed." if check() else f"{name} check failed.", level="info")
+            result = test()
+            logger.log(f"{name} check passed." if result else f"{name} check returned empty.", level="info")
         except Exception as e:
             logger.log(f"{name} check error: {e}", level="error")
 
-    if not components["alert_manager"].enabled:
-        logger.log("Email alerts disabled or misconfigured.", level="warning")
-    else:
+    if components["alert_manager"].enabled:
         logger.log("AlertManager config OK.", level="info")
+    else:
+        logger.log("Email alerts disabled or misconfigured.", level="warning")
 
     logger.log("Health check complete.", level="info")
 
