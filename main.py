@@ -167,4 +167,3 @@ def run_all():
     api_thread.start()
     cli_thread.start()
     main_loop(components)
-
