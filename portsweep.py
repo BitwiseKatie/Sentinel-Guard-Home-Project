@@ -18,7 +18,6 @@ def sweep_host_ports(
         _scan_port(ip, port, timeout, grab_banner, detailed) for port in ports
     )))
 
-
 def _scan_port(
     ip: str,
     port: int,
