@@ -98,8 +98,9 @@ class MetricsExporter:
 
     def _metric_uptime(self):
         try:
-            parts = self.uptime_monitor.get_uptime().split()
-            hours = int(parts[0]) * 24 + int(parts[2])
+            uptime_str = self.uptime_monitor.get_uptime()
+            parts = {x[-1]: int(x[:-1]) for x in uptime_str.split()}
+            hours = parts.get("d", 0) * 24 + parts.get("h", 0)
             self.metrics["homescanner_uptime_hours"] = {
                 "help": "System uptime in hours",
                 "type": "gauge",
