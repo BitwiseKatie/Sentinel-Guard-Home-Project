@@ -84,6 +84,15 @@ class NetworkScanner:
         self.logger.info(f"Scan completed in {elapsed:.2f}s — {len(self.results)} open port(s) found.")
         return self.results
 
+    def scan_sync(self) -> List[Dict]:
+        try:
+            return asyncio.run(self.scan())
+        except RuntimeError:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                return loop.run_until_complete(self.scan())  # fallback for threaded CLI
+            return loop.run_until_complete(self.scan())
+
     async def _scan_ports(self):
         await asyncio.gather(*(self._scan_port(port) for port in self.ports))
 
