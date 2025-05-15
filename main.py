@@ -13,7 +13,6 @@ from monitoring.user_activity_monitor import UserActivityMonitor
 from api.server import run_api_server
 from cli.cli import HomescannerCLI
 
-
 def build_components():
     logger = Logger()
     scanner = NetworkScanner(target="127.0.0.1")
@@ -39,7 +38,6 @@ def build_components():
         "user_activity_monitor": user_activity_monitor
     }
 
-
 def main_loop(components):
     logger = components["logger"]
     scanner = components["scanner"]
@@ -59,7 +57,7 @@ def main_loop(components):
         logger.log("Starting scan cycle...", level="info")
 
         try:
-            threats = scanner.scan()
+            threats = scanner.scan_sync()
             for threat in threats:
                 message = f"Threat detected: {threat}"
                 logger.log(message, level="warning")
@@ -111,7 +109,6 @@ def main_loop(components):
         except Exception as e:
             logger.log(f"Error during scan cycle: {e}", level="error")
 
-
 def health_check(components):
     logger = components["logger"]
     db = components["db"]
@@ -131,7 +128,7 @@ def health_check(components):
         logger.log(f"Health Check Error: Database failure - {e}", level="error")
 
     try:
-        test_threats = scanner.scan()
+        test_threats = scanner.scan_sync()
         logger.log(f"Network scan test returned {len(test_threats)} result(s).", level="info")
     except Exception as e:
         logger.log(f"Health Check Error: Scanner failure - {e}", level="error")
@@ -155,7 +152,6 @@ def health_check(components):
 
     logger.log("Health check completed.", level="info")
 
-
 def run_all():
     components = build_components()
     cli = HomescannerCLI(
@@ -177,7 +173,6 @@ def run_all():
     cli_thread.start()
 
     main_loop(components)
-
 
 if __name__ == "__main__":
     run_all()
