@@ -173,9 +173,3 @@ class FileMonitor:
         except Exception as e:
             self.logger.error(f"Failed to save snapshot: {e}")
             return False
-
-    def reset_metadata(self):
-        """Manually reinitialize baseline file state."""
-        self.logger.info("Resetting baseline file state...")
-        self.files_metadata = self._scan_directory()
-        self.logger.info(f"Now tracking {len(self.files_metadata)} files.")
