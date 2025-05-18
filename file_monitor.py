@@ -152,24 +152,3 @@ class FileMonitor:
 
         self.files_metadata = current_state
         return changes
-
-    def snapshot_to_json(self, output_path: Union[str, Path]) -> bool:
-        """Dump current state of monitored files into a JSON snapshot."""
-        try:
-            snapshot = {
-                "timestamp": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-                "watch_dir": str(self.watch_dir),
-                "hash_algorithm": self.hash_algorithm,
-                "recursive": self.recursive,
-                "file_count": len(self.files_metadata),
-                "files": self.files_metadata
-            }
-            output_path = Path(output_path)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            with output_path.open("w", encoding="utf-8") as f:
-                json.dump(snapshot, f, indent=2)
-            self.logger.info(f"Snapshot written to: {output_path}")
-            return True
-        except Exception as e:
-            self.logger.error(f"Failed to save snapshot: {e}")
-            return False
