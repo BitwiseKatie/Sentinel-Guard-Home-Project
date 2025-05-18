@@ -124,31 +124,3 @@ class FileMonitor:
         except Exception as e:
             self.logger.debug(f"Cannot get mtime for {path}: {e}")
             return None
-
-    def check_files(self) -> List[str]:
-        """Detects file-level changes since last state snapshot."""
-        current_state = self._scan_directory()
-        changes: List[str] = []
-
-        for path, meta in current_state.items():
-            old = self.files_metadata.get(path)
-            if not old:
-                changes.append(f"[NEW] {path}")
-            elif meta["hash"] != old["hash"]:
-                changes.append(f"[MODIFIED] {path}")
-            elif self.include_timestamps and meta["mtime"] != old.get("mtime"):
-                changes.append(f"[TOUCHED] {path}")
-
-        for path in self.files_metadata:
-            if path not in current_state:
-                changes.append(f"[DELETED] {path}")
-
-        if changes:
-            self.logger.warning(f"{len(changes)} change(s) detected in monitored files.")
-            for line in changes:
-                self.logger.info(line)
-        else:
-            self.logger.info("No file changes detected.")
-
-        self.files_metadata = current_state
-        return changes
