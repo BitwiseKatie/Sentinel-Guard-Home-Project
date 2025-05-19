@@ -93,32 +93,3 @@ class HomescannerCLI:
                 print(Fore.MAGENTA + "------------------------\n")
         finally:
             conn.close()
-
-    def manual_scan(self):
-        print(Fore.CYAN + "Running full scan...")
-
-        for threat in self.scanner.scan():
-            self._report_issue("Threat detected", threat)
-
-        for anomaly in self.analyzer.analyze_logs():
-            self._report_issue("Log anomaly detected", anomaly)
-
-        for file in self.file_monitor.check_files():
-            self._report_issue("Modified file detected", file)
-
-        for proc in self.process_monitor.check_processes():
-            self._report_issue("Suspicious process detected", proc)
-
-        for warning in self.disk_monitor.check_disk_usage():
-            self._report_issue("Disk warning", warning)
-
-        print(Fore.GREEN + "Scan complete.\n")
-
-    def _report_issue(self, prefix, message):
-        entry = f"{prefix}: {message}"
-        self.logger.log(entry)
-        self.alert_manager.send_alert(message)
-        self.db.add_incident(message)
-        print(Fore.RED + entry)
-
-
