@@ -121,5 +121,4 @@ class HomescannerCLI:
         self.db.add_incident(message)
         print(Fore.RED + entry)
 
-    def unknown_command(self):
-        print(Fore.RED + "Unknown command. Type 'help' to list available commands.")
+
