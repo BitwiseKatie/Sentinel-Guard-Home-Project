@@ -111,10 +111,6 @@ main() {
   check_command "$PYTHON_EXEC"
   check_command pip3
   check_python_version
-  create_virtualenv
-  upgrade_core_packages
-  install_project_dependencies
-  prepare_directories
   generate_default_config
   create_gitignore
   final_summary
