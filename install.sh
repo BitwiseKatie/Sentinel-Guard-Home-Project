@@ -10,21 +10,6 @@ CONFIG_PLACEHOLDER="config/config.yml"
 LOG_FILE="setup.log"
 PYTHON_EXEC="python3"
 
-log() {
-  local level="$1"
-  local message="$2"
-  local timestamp
-  timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  echo "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
-}
-
-header() {
-  echo ""
-  echo "=================================================="
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$PROJECT_NAME SETUP START]"
-  echo "=================================================="
-}
-
 check_command() {
   if ! command -v "$1" &>/dev/null; then
     log "ERROR" "Missing required command: $1"
