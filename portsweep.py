@@ -14,7 +14,7 @@ def sweep_host_ports(
     include_closed: bool = False,
     workers: int = 100,
 ) -> List[Dict[str, Optional[str]]]:
-    ipaddress.ip_address(ip)  
+    ipaddress.ip_address(ip)  # raise ValueError для некорректного IP
     ports = [p for p in ports if 0 < p < 65536]
 
     def task(port: int) -> Dict[str, Optional[str]]:
@@ -42,3 +42,12 @@ def sweep_host_ports(
                 "banner": banner,
             }
         return {}
+
+    results: List[Dict[str, Optional[str]]] = []
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(task, p) for p in ports]
+        for fut in as_completed(futures):
+            res = fut.result()
+            if res:
+                results.append(res)
+    return sorted(results, key=lambda x: x["port"])
