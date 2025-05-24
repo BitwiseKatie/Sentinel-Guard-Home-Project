@@ -10,24 +10,27 @@ class LogAnalyzer:
     def analyze_logs(self):
         try:
             logs = self.logger.read_logs()
-        except (FileNotFoundError, IOError):
-            return ["Log file not found. No logs to analyze."]
-        except Exception as e:
-            return [f"Error reading logs: {e}"]
+        except (OSError, IOError, FileNotFoundError) as e:
+            return [f"Log read error: {e}"]
+
         return [
-            f"[{rule.get('title', 'Unnamed Rule')}] {line.strip()}"
+            f"[{r.get('title', 'Unnamed')}] {line.strip()}"
             for line in logs
-            for rule in self.rules
-            if self._match(rule.get("detection", {}).get("selection", {}), line)
+            for r in self.rules
+            if self._match(r.get("detection", {}).get("selection", {}), line)
         ]
 
     def _match(self, selection, text):
+        if not selection or not isinstance(selection, dict):
+            return False
+        lowered = text.lower()
         try:
-            text = text.lower()
             return any(
-                any(re.search(re.escape(s), text, re.IGNORECASE) for s in ([v] if isinstance(v, str) else v))
+                any(re.search(re.escape(s), lowered, re.IGNORECASE)
+                    for s in v if isinstance(v, list))
+                if isinstance(v, list)
+                else re.search(re.escape(v), lowered, re.IGNORECASE)
                 for v in selection.values()
-                if isinstance(v, (str, list))
             )
-        except:
+        except Exception:
             return False
