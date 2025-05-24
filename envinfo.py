@@ -29,7 +29,6 @@ def _get_local_ip() -> str:
     except Exception:
         return "unknown"
 
-
 def _detect_virtualization() -> str:
     try:
         if platform.system() == "Linux":
