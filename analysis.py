@@ -71,15 +71,12 @@ class LogAnalyzer:
                     self.offsets[path] = f.tell()
             except OSError as e:
                 self.logger.log(f"Log read error: {e}", level="error")
-rn all(sel.pattern.search(text) for sel in rule.selectors)
 
-    def _over_threshold(self, rule: Rule, ts: str) -> bool:
-        if not rule.window:
+    def _hit(self, rule: Rule, line: str) -> bool:
+        text = line.lower()
+        if rule.neg_selectors and any(sel.pattern.search(text) for sel in rule.neg_selectors):
             return False
-        bucket = int(datetime.fromisoformat(ts).timestamp()) // rule.window
-        counter = self.hit_counter[rule.id]
-        counter[bucket] = counter.get(bucket, 0) + 1
-        return counter[bucket] > rule.threshold
+        return all(sel.pattern.search(text) for sel in rule.selectors)
 
     def _compile_rules(self, raw: List[Dict]) -> List[Rule]:
         compiled = []
@@ -98,6 +95,28 @@ rn all(sel.pattern.search(text) for sel in rule.selectors)
                 )
             )
         return compiled
+
+    def _build_selectors(self, block: Dict) -> List[Selector]:
+        result = []
+        for value in block.values():
+            vals = value if isinstance(value, list) else [value]
+            for v in vals:
+                v = str(v)
+                if v.startswith("/") and v.endswith("/"):
+                    pat = re.compile(v.strip("/"), re.I)
+                else:
+                    pat = re.compile(re.escape(v), re.I)
+                result.append(Selector("regex", pat))
+        return result
+
+    def _load_state(self):
+        if os.path.exists(self.STATE_PATH):
+            try:
+                data = json.load(open(self.STATE_PATH, encoding="utf-8"))
+                self.offsets = data.get("offsets", {})
+                self.hit_counter = defaultdict(dict, {k: {int(b): c for b, c in v.items()} for k, v in data.get("hits", {}).items()})
+            except Exception:
+                self.offsets, self.hit_counter = {}, defaultdict(dict)
 
     def _save_state(self):
         try:
