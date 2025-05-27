@@ -78,6 +78,14 @@ class LogAnalyzer:
             return False
         return all(sel.pattern.search(text) for sel in rule.selectors)
 
+    def _over_threshold(self, rule: Rule, ts: str) -> bool:
+        if not rule.window:
+            return False
+        bucket = int(datetime.fromisoformat(ts).timestamp()) // rule.window
+        counter = self.hit_counter[rule.id]
+        counter[bucket] = counter.get(bucket, 0) + 1
+        return counter[bucket] > rule.threshold
+
     def _compile_rules(self, raw: List[Dict]) -> List[Rule]:
         compiled = []
         for r in raw:
