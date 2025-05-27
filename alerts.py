@@ -26,20 +26,6 @@ class AlertManager:
             self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
-    def send_alert(self, message, severity="warning", source="homescanner"):
-        if not message:
-            self.logger.error("Skipped sending alert: message was empty.")
-            return
-
-        entry = f"[{severity.upper()}] {source} - {message}"
-        self.logger.warning(entry)
-
-        if not self.enabled:
-            self.logger.warning("Skipped sending alert: SMTP config incomplete or disabled.")
-            return
-
-        self._send_email(f"[{severity.upper()}] {source}", message)
-
     def _send_email(self, subject, body):
         msg = MIMEMultipart()
         msg["From"] = self.email_from
