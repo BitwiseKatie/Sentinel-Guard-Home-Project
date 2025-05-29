@@ -36,15 +36,6 @@ class FileMonitor:
             self.logger.warning(f"Unsupported hash algorithm '{self.hash_algorithm}', using sha256.")
             self.hash_algorithm = "sha256"
 
-    def _initialize_state(self):
-        self.logger.info(f"Initializing baseline file state from: {self.watch_dir}")
-        self.files_metadata = self._scan_directory()
-        self.logger.info(f"Tracking {len(self.files_metadata)} files in baseline.")
-
-    def _is_excluded(self, path: Path) -> bool:
-        resolved = str(path.resolve())
-        return any(resolved.startswith(excl) for excl in self.exclusions)
-
     def _is_extension_tracked(self, path: Path) -> bool:
         if not self.track_extensions:
             return True
