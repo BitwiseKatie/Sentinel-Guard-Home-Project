@@ -36,11 +36,6 @@ class FileMonitor:
             self.logger.warning(f"Unsupported hash algorithm '{self.hash_algorithm}', using sha256.")
             self.hash_algorithm = "sha256"
 
-    def _is_extension_tracked(self, path: Path) -> bool:
-        if not self.track_extensions:
-            return True
-        return path.suffix.lower().lstrip(".") in self.track_extensions
-
     def _is_size_allowed(self, path: Path) -> bool:
         if self.max_file_size_mb is None:
             return True
