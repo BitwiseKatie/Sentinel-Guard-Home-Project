@@ -27,18 +27,6 @@ class FileMonitor:
         self._validate_config()
         self._initialize_state()
 
-    def _init_logger(self):
-        self.logger = logging.getLogger("FileMonitor")
-        self.logger.setLevel(logging.INFO)
-        if not self.logger.handlers:
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                "[%(asctime)s] %(levelname)s - %(message)s",
-                "%Y-%m-%d %H:%M:%S"
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
-
     def _validate_config(self):
         if not self.watch_dir.exists() or not self.watch_dir.is_dir():
             raise FileNotFoundError(f"Invalid watch directory: {self.watch_dir}")
