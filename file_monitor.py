@@ -27,6 +27,18 @@ class FileMonitor:
         self._validate_config()
         self._initialize_state()
 
+    def _init_logger(self):
+        self.logger = logging.getLogger("FileMonitor")
+        self.logger.setLevel(logging.INFO)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter(
+                "[%(asctime)s] %(levelname)s - %(message)s",
+                "%Y-%m-%d %H:%M:%S"
+            )
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+
     def _validate_config(self):
         if not self.watch_dir.exists() or not self.watch_dir.is_dir():
             raise FileNotFoundError(f"Invalid watch directory: {self.watch_dir}")
@@ -35,6 +47,20 @@ class FileMonitor:
         except ValueError:
             self.logger.warning(f"Unsupported hash algorithm '{self.hash_algorithm}', using sha256.")
             self.hash_algorithm = "sha256"
+
+    def _initialize_state(self):
+        self.logger.info(f"Initializing baseline file state from: {self.watch_dir}")
+        self.files_metadata = self._scan_directory()
+        self.logger.info(f"Tracking {len(self.files_metadata)} files in baseline.")
+
+    def _is_excluded(self, path: Path) -> bool:
+        resolved = str(path.resolve())
+        return any(resolved.startswith(excl) for excl in self.exclusions)
+
+    def _is_extension_tracked(self, path: Path) -> bool:
+        if not self.track_extensions:
+            return True
+        return path.suffix.lower().lstrip(".") in self.track_extensions
 
     def _is_size_allowed(self, path: Path) -> bool:
         if self.max_file_size_mb is None:
@@ -126,3 +152,30 @@ class FileMonitor:
 
         self.files_metadata = current_state
         return changes
+
+    def snapshot_to_json(self, output_path: Union[str, Path]) -> bool:
+        """Dump current state of monitored files into a JSON snapshot."""
+        try:
+            snapshot = {
+                "timestamp": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                "watch_dir": str(self.watch_dir),
+                "hash_algorithm": self.hash_algorithm,
+                "recursive": self.recursive,
+                "file_count": len(self.files_metadata),
+                "files": self.files_metadata
+            }
+            output_path = Path(output_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with output_path.open("w", encoding="utf-8") as f:
+                json.dump(snapshot, f, indent=2)
+            self.logger.info(f"Snapshot written to: {output_path}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to save snapshot: {e}")
+            return False
+
+    def reset_metadata(self):
+        """Manually reinitialize baseline file state."""
+        self.logger.info("Resetting baseline file state...")
+        self.files_metadata = self._scan_directory()
+        self.logger.info(f"Now tracking {len(self.files_metadata)} files.")
