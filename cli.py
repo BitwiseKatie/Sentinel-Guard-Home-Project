@@ -74,8 +74,6 @@ class HomescannerCLI:
             else:
                 for ts, desc in rows:
                     print(f"{ts} | {desc}")
-        finally:
-            conn.close()
 
     async def manual_scan(self):
         results = []
