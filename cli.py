@@ -44,6 +44,12 @@ class HomescannerCLI:
         else:
             print("Unknown command.")
 
+    def print_status(self):
+        print("System is running. Monitors are active.")
+
+    def print_uptime(self):
+        print(self.uptime_monitor.get_uptime())
+
     def check_disk(self):
         warnings = self.disk_monitor.check_disk_usage()
         if warnings:
@@ -74,6 +80,8 @@ class HomescannerCLI:
             else:
                 for ts, desc in rows:
                     print(f"{ts} | {desc}")
+        finally:
+            conn.close()
 
     async def manual_scan(self):
         results = []
@@ -135,6 +143,14 @@ def build_parser():
     scan_parser.add_argument("--json", action="store_true")
 
     return parser
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    cli = HomescannerCLI(args)
+    asyncio.run(cli.run())
+
 
 if __name__ == "__main__":
     main()
