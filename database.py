@@ -124,4 +124,3 @@ class IncidentDatabase:
         except Exception as e:
             logging.exception(f"[DB FETCH] Failed to fetch latest incident: {e}")
             return None
-
