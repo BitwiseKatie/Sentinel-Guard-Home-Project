@@ -15,8 +15,6 @@ class AlertManager:
         self.email_from = smtp.get("user", "") or "noreply@example.com"
         self.smtp_server = smtp.get("server", "")
         self.smtp_port = smtp.get("port", 587)
-        self.smtp_user = smtp.get("user", "")
-        self.smtp_password = smtp.get("password", "")
         self.use_tls = smtp.get("use_tls", True)
 
         self.enabled = all([self.smtp_server, self.smtp_port, self.smtp_user, self.smtp_password, self.email_to])
