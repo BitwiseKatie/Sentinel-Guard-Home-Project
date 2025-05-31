@@ -14,6 +14,13 @@ class IncidentDatabase:
         self._ensure_directory()
         self._initialize_database()
 
+    def _ensure_directory(self):
+        try:
+            self.db_file.parent.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            logging.exception(f"[DB INIT] Failed to create directory: {e}")
+            raise RuntimeError("Could not create directory for database")
+
     def _initialize_database(self):
         try:
             with self._connect() as conn:
@@ -67,6 +74,14 @@ class IncidentDatabase:
                 if severity:
                     conditions.append("severity = ?")
                     params.append(severity.strip().lower())
+
+                if type:
+                    conditions.append("type = ?")
+                    params.append(type.strip().lower())
+
+                if source:
+                    conditions.append("source = ?")
+                    params.append(source.strip().lower())
 
                 if since:
                     conditions.append("timestamp >= ?")
