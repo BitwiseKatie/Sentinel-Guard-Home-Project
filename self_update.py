@@ -35,21 +35,6 @@ class SelfUpdater:
         remote = self.get_remote_version()
         return self._compare_versions(remote, local)
 
-    def download_update(self) -> str:
-        try:
-            response = requests.get(f"{self.update_url}/update.zip", stream=True, timeout=10)
-            if response.status_code != 200:
-                raise RuntimeError(f"Failed to download update package. HTTP {response.status_code}")
-
-            with NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
-                for chunk in response.iter_content(chunk_size=8192):
-                    tmp.write(chunk)
-                self.logger.log(f"Downloaded update to {tmp.name}", level="info")
-                return tmp.name
-        except Exception as e:
-            self.logger.log(f"Download failed: {e}", level="error")
-            return ""
-
     def apply_update(self, zip_path: str):
         if not zip_path or not os.path.isfile(zip_path):
             self.logger.log("Update file not found. Aborting update.", level="error")
