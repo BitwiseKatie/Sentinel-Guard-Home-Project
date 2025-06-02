@@ -35,20 +35,6 @@ class SelfUpdater:
         remote = self.get_remote_version()
         return self._compare_versions(remote, local)
 
-    def apply_update(self, zip_path: str):
-        if not zip_path or not os.path.isfile(zip_path):
-            self.logger.log("Update file not found. Aborting update.", level="error")
-            return
-
-        try:
-            with TemporaryDirectory() as tmpdir:
-                with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    zip_ref.extractall(tmpdir)
-                self._replace_files(tmpdir)
-                self.logger.log("Update applied successfully.", level="info")
-        except Exception as e:
-            self.logger.log(f"Failed to apply update: {e}", level="error")
-
     def _replace_files(self, source_dir: str):
         for root, _, files in os.walk(source_dir):
             for file in files:
