@@ -35,6 +35,40 @@ class SelfUpdater:
         remote = self.get_remote_version()
         return self._compare_versions(remote, local)
 
+    def _compare_versions(self, v1: str, v2: str) -> bool:
+        def to_tuple(v):
+            return tuple(map(int, (v.strip().split("."))))
+        return to_tuple(v1) > to_tuple(v2)
+
+    def download_update(self) -> str:
+        try:
+            response = requests.get(f"{self.update_url}/update.zip", stream=True, timeout=10)
+            if response.status_code != 200:
+                raise RuntimeError(f"Failed to download update package. HTTP {response.status_code}")
+
+            with NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
+                for chunk in response.iter_content(chunk_size=8192):
+                    tmp.write(chunk)
+                self.logger.log(f"Downloaded update to {tmp.name}", level="info")
+                return tmp.name
+        except Exception as e:
+            self.logger.log(f"Download failed: {e}", level="error")
+            return ""
+
+    def apply_update(self, zip_path: str):
+        if not zip_path or not os.path.isfile(zip_path):
+            self.logger.log("Update file not found. Aborting update.", level="error")
+            return
+
+        try:
+            with TemporaryDirectory() as tmpdir:
+                with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                    zip_ref.extractall(tmpdir)
+                self._replace_files(tmpdir)
+                self.logger.log("Update applied successfully.", level="info")
+        except Exception as e:
+            self.logger.log(f"Failed to apply update: {e}", level="error")
+
     def _replace_files(self, source_dir: str):
         for root, _, files in os.walk(source_dir):
             for file in files:
