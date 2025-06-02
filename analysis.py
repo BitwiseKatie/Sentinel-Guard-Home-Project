@@ -36,13 +36,6 @@ class LogAnalyzer:
     STATE_PATH = "cache/analyzer_state.json"
     LOG_MASK = "logs/*.log*"
 
-    def __init__(self):
-        self.logger = Logger()
-        self.rules: List[Rule] = self._compile_rules(load_detection_rules())
-        self.offsets: Dict[str, int] = {}
-        self.hit_counter: Dict[str, Dict[int, int]] = defaultdict(dict)
-        self._load_state()
-
     def analyze(self, fmt: str = "plain") -> Iterable[str]:
         start = time.time()
         for finding in self._scan():
