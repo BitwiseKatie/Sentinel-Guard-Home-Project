@@ -36,6 +36,13 @@ class LogAnalyzer:
     STATE_PATH = "cache/analyzer_state.json"
     LOG_MASK = "logs/*.log*"
 
+    def __init__(self):
+        self.logger = Logger()
+        self.rules: List[Rule] = self._compile_rules(load_detection_rules())
+        self.offsets: Dict[str, int] = {}
+        self.hit_counter: Dict[str, Dict[int, int]] = defaultdict(dict)
+        self._load_state()
+
     def analyze(self, fmt: str = "plain") -> Iterable[str]:
         start = time.time()
         for finding in self._scan():
@@ -64,6 +71,12 @@ class LogAnalyzer:
                     self.offsets[path] = f.tell()
             except OSError as e:
                 self.logger.log(f"Log read error: {e}", level="error")
+
+    def _hit(self, rule: Rule, line: str) -> bool:
+        text = line.lower()
+        if rule.neg_selectors and any(sel.pattern.search(text) for sel in rule.neg_selectors):
+            return False
+        return all(sel.pattern.search(text) for sel in rule.selectors)
 
     def _over_threshold(self, rule: Rule, ts: str) -> bool:
         if not rule.window:
