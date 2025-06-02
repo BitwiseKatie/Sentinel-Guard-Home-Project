@@ -35,11 +35,6 @@ class SelfUpdater:
         remote = self.get_remote_version()
         return self._compare_versions(remote, local)
 
-    def _compare_versions(self, v1: str, v2: str) -> bool:
-        def to_tuple(v):
-            return tuple(map(int, (v.strip().split("."))))
-        return to_tuple(v1) > to_tuple(v2)
-
     def download_update(self) -> str:
         try:
             response = requests.get(f"{self.update_url}/update.zip", stream=True, timeout=10)
