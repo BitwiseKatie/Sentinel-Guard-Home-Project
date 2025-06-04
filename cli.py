@@ -89,11 +89,6 @@ class HomescannerCLI:
             self._report_issue("Log anomaly detected", anomaly)
             results.append(anomaly)
 
-        files = self.file_monitor.check_files()
-        for f in files:
-            self._report_issue("Modified file detected", f)
-            results.append(f)
-
         procs = self.process_monitor.check_processes()
         for p in procs:
             self._report_issue("Suspicious process detected", p)
