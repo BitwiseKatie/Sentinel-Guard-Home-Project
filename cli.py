@@ -7,6 +7,9 @@ from core.analysis import LogAnalyzer
 from core.alerts import AlertManager
 from core.database import IncidentDatabase
 from monitoring.process_monitor import ProcessMonitor
+from security.file_monitor import FileMonitor
+from monitoring.disk_monitor import DiskMonitor
+from system.uptime_monitor import UptimeMonitor
 from monitoring.user_activity_monitor import UserActivityMonitor
 from core.scanner import NetworkScanner
 
@@ -19,6 +22,9 @@ class HomescannerCLI:
         self.analyzer = LogAnalyzer()
         self.alert_manager = AlertManager()
         self.db = IncidentDatabase()
+        self.process_monitor = ProcessMonitor()
+        self.file_monitor = FileMonitor()
+        self.disk_monitor = DiskMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
 
@@ -27,6 +33,10 @@ class HomescannerCLI:
             self.print_status()
         elif self.args.command == "uptime":
             self.print_uptime()
+        elif self.args.command == "disk":
+            self.check_disk()
+        elif self.args.command == "logs":
+            self.show_logs()
         elif self.args.command == "incidents":
             self.show_incidents()
         elif self.args.command == "scan":
@@ -85,6 +95,11 @@ class HomescannerCLI:
         for anomaly in anomalies:
             self._report_issue("Log anomaly detected", anomaly)
             results.append(anomaly)
+
+        files = self.file_monitor.check_files()
+        for f in files:
+            self._report_issue("Modified file detected", f)
+            results.append(f)
 
         procs = self.process_monitor.check_processes()
         for p in procs:
