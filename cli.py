@@ -37,6 +37,10 @@ class HomescannerCLI:
             self.check_disk()
         elif self.args.command == "logs":
             self.show_logs()
+        elif self.args.command == "incidents":
+            self.show_incidents()
+        elif self.args.command == "scan":
+            await self.manual_scan()
         else:
             print("Unknown command.")
 
