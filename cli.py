@@ -122,7 +122,6 @@ class HomescannerCLI:
         if not self.args.json:
             print(entry)
 
-
 def build_parser():
     parser = ArgumentParser(prog="homescanner")
     subparsers = parser.add_subparsers(dest="command")
@@ -143,7 +142,6 @@ def build_parser():
     scan_parser.add_argument("--json", action="store_true")
 
     return parser
-
 
 def main():
     parser = build_parser()
