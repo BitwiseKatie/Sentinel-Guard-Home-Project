@@ -20,16 +20,6 @@ class CorrelationEngine:
         base = f"{event['type']}|{event['source']}|{event['message']}"
         return hashlib.sha256(base.encode()).hexdigest()
 
-    def ingest_event(self, event):
-        timestamp = event.get("timestamp")
-        if not isinstance(timestamp, datetime):
-            timestamp = self._now()
-        event["timestamp"] = timestamp
-
-        self.events.append(event)
-        self._expire_old_events()
-        self._check_patterns()
-
     def _expire_old_events(self):
         cutoff = self._now() - self.time_window
         while self.events and self.events[0]["timestamp"] < cutoff:
