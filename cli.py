@@ -6,6 +6,10 @@ from core.logger import Logger
 from core.analysis import LogAnalyzer
 from core.alerts import AlertManager
 from core.database import IncidentDatabase
+from monitoring.process_monitor import ProcessMonitor
+from security.file_monitor import FileMonitor
+from monitoring.disk_monitor import DiskMonitor
+from system.uptime_monitor import UptimeMonitor
 from monitoring.user_activity_monitor import UserActivityMonitor
 from core.scanner import NetworkScanner
 
@@ -31,6 +35,10 @@ class HomescannerCLI:
             self.print_uptime()
         elif self.args.command == "disk":
             self.check_disk()
+        elif self.args.command == "logs":
+            self.show_logs()
+        elif self.args.command == "incidents":
+            self.show_incidents()
         elif self.args.command == "scan":
             await self.manual_scan()
         else:
@@ -134,6 +142,12 @@ def build_parser():
     scan_parser.add_argument("--json", action="store_true")
 
     return parser
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    cli = HomescannerCLI(args)
+    asyncio.run(cli.run())
 
 
 if __name__ == "__main__":
