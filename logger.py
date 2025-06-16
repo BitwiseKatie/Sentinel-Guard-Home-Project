@@ -91,19 +91,6 @@ class Logger:
             else:
                 self.logger.log(getattr(logging, level.upper(), logging.INFO), message, extra=extra)
 
-    def read_logs(self, lines=100):
-        try:
-            with open(self.log_file, "r", encoding="utf-8") as f:
-                return f.readlines()[-lines:]
-        except Exception as e:
-            return [json.dumps({
-                "timestamp": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-                "level": "ERROR",
-                "component": "logger",
-                "event_type": "internal",
-                "message": f"Log read error: {str(e)}"
-            })]
-
     def _flush(self, *_):
         for handler in self.logger.handlers:
             try:
