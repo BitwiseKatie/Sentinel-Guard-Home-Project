@@ -107,10 +107,6 @@ class HomescannerCLI:
         if not self.args.json:
             print(entry)
 
-def build_parser():
-    parser = ArgumentParser(prog="homescanner")
-    subparsers = parser.add_subparsers(dest="command")
-
     subparsers.add_parser("status")
     subparsers.add_parser("uptime")
     subparsers.add_parser("disk")
