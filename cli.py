@@ -33,6 +33,8 @@ class HomescannerCLI:
             self.print_status()
         elif self.args.command == "uptime":
             self.print_uptime()
+        elif self.args.command == "disk":
+            self.check_disk()
         elif self.args.command == "logs":
             self.show_logs()
         elif self.args.command == "incidents":
@@ -55,6 +57,14 @@ class HomescannerCLI:
                 print(w)
         else:
             print("Disk usage is within normal limits.")
+
+    def show_logs(self):
+        logs = self.logger.read_logs(lines=self.args.lines)
+        if self.args.json:
+            print(json.dumps({"logs": logs}, indent=2))
+        else:
+            for line in logs:
+                print(line.strip())
 
     def show_incidents(self):
         conn = self.db.get_connection()
@@ -86,6 +96,11 @@ class HomescannerCLI:
             self._report_issue("Log anomaly detected", anomaly)
             results.append(anomaly)
 
+        files = self.file_monitor.check_files()
+        for f in files:
+            self._report_issue("Modified file detected", f)
+            results.append(f)
+
         procs = self.process_monitor.check_processes()
         for p in procs:
             self._report_issue("Suspicious process detected", p)
@@ -107,9 +122,17 @@ class HomescannerCLI:
         if not self.args.json:
             print(entry)
 
+def build_parser():
+    parser = ArgumentParser(prog="homescanner")
+    subparsers = parser.add_subparsers(dest="command")
+
     subparsers.add_parser("status")
     subparsers.add_parser("uptime")
     subparsers.add_parser("disk")
+
+    logs_parser = subparsers.add_parser("logs")
+    logs_parser.add_argument("--lines", type=int, default=20)
+    logs_parser.add_argument("--json", action="store_true")
 
     inc_parser = subparsers.add_parser("incidents")
     inc_parser.add_argument("--count", type=int, default=5)
