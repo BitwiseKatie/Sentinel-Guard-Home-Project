@@ -22,6 +22,9 @@ class HomescannerCLI:
         self.analyzer = LogAnalyzer()
         self.alert_manager = AlertManager()
         self.db = IncidentDatabase()
+        self.process_monitor = ProcessMonitor()
+        self.file_monitor = FileMonitor()
+        self.disk_monitor = DiskMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
 
@@ -34,6 +37,10 @@ class HomescannerCLI:
             self.check_disk()
         elif self.args.command == "logs":
             self.show_logs()
+        elif self.args.command == "incidents":
+            self.show_incidents()
+        elif self.args.command == "scan":
+            await self.manual_scan()
         else:
             print("Unknown command.")
 
@@ -83,7 +90,12 @@ class HomescannerCLI:
         for threat in threats:
             self._report_issue("Threat detected", threat)
             results.append(threat)
-            
+
+        anomalies = self.analyzer.analyze_logs()
+        for anomaly in anomalies:
+            self._report_issue("Log anomaly detected", anomaly)
+            results.append(anomaly)
+
         files = self.file_monitor.check_files()
         for f in files:
             self._report_issue("Modified file detected", f)
@@ -93,6 +105,14 @@ class HomescannerCLI:
         for p in procs:
             self._report_issue("Suspicious process detected", p)
             results.append(p)
+
+        warnings = self.disk_monitor.check_disk_usage()
+        for w in warnings:
+            self._report_issue("Disk warning", w)
+            results.append(w)
+
+        if self.args.json:
+            print(json.dumps({"scan_results": results}, indent=2))
 
     def _report_issue(self, prefix, message):
         entry = f"{prefix}: {message}"
@@ -113,6 +133,13 @@ def build_parser():
     logs_parser = subparsers.add_parser("logs")
     logs_parser.add_argument("--lines", type=int, default=20)
     logs_parser.add_argument("--json", action="store_true")
+
+    inc_parser = subparsers.add_parser("incidents")
+    inc_parser.add_argument("--count", type=int, default=5)
+    inc_parser.add_argument("--json", action="store_true")
+
+    scan_parser = subparsers.add_parser("scan")
+    scan_parser.add_argument("--json", action="store_true")
 
     return parser
 
