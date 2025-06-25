@@ -33,11 +33,3 @@ def _local_ip() -> str:
             return s.getsockname()[0]
     except:
         return "unknown"
-
-
-def _disk_gb() -> str:
-    try:
-        total, _, _ = shutil.disk_usage(os.getcwd())
-        return str(round(total / 1_073_741_824, 1))
-    except:
-        return "unknown"
