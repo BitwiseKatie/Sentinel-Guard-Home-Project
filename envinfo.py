@@ -35,19 +35,6 @@ def _local_ip() -> str:
         return "unknown"
 
 
-def _is_virtualized() -> str:
-    if platform.system() != "Linux":
-        return "no"
-    try:
-        with open("/proc/cpuinfo", encoding="utf-8") as f:
-            txt = f.read().lower()
-            if any(x in txt for x in ("hypervisor", "kvm", "vmware", "xen", "qemu", "vbox")):
-                return "yes"
-        return "no"
-    except:
-        return "unknown"
-
-
 def _disk_gb() -> str:
     try:
         total, _, _ = shutil.disk_usage(os.getcwd())
