@@ -26,11 +26,6 @@ class AlertManager:
             self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
-    def send_alert(self, message, severity="warning", source="homescanner"):
-        if not message:
-            self.logger.error("Skipped sending alert: message was empty.")
-            return
-
         entry = f"[{severity.upper()}] {source} - {message}"
         self.logger.warning(entry)
 
