@@ -5,8 +5,11 @@ from argparse import ArgumentParser, Namespace
 from core.logger import Logger
 from core.analysis import LogAnalyzer
 from core.alerts import AlertManager
+from core.database import IncidentDatabase
 from monitoring.process_monitor import ProcessMonitor
 from security.file_monitor import FileMonitor
+from monitoring.disk_monitor import DiskMonitor
+from system.uptime_monitor import UptimeMonitor
 from monitoring.user_activity_monitor import UserActivityMonitor
 from core.scanner import NetworkScanner
 
@@ -28,6 +31,8 @@ class HomescannerCLI:
     async def run(self):
         if self.args.command == "status":
             self.print_status()
+        elif self.args.command == "uptime":
+            self.print_uptime()
         elif self.args.command == "disk":
             self.check_disk()
         elif self.args.command == "logs":
@@ -41,6 +46,9 @@ class HomescannerCLI:
 
     def print_status(self):
         print("System is running. Monitors are active.")
+
+    def print_uptime(self):
+        print(self.uptime_monitor.get_uptime())
 
     def check_disk(self):
         warnings = self.disk_monitor.check_disk_usage()
@@ -82,6 +90,11 @@ class HomescannerCLI:
         for threat in threats:
             self._report_issue("Threat detected", threat)
             results.append(threat)
+
+        anomalies = self.analyzer.analyze_logs()
+        for anomaly in anomalies:
+            self._report_issue("Log anomaly detected", anomaly)
+            results.append(anomaly)
 
         files = self.file_monitor.check_files()
         for f in files:
