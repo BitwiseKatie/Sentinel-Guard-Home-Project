@@ -83,11 +83,6 @@ class HomescannerCLI:
             self._report_issue("Threat detected", threat)
             results.append(threat)
 
-        anomalies = self.analyzer.analyze_logs()
-        for anomaly in anomalies:
-            self._report_issue("Log anomaly detected", anomaly)
-            results.append(anomaly)
-
         files = self.file_monitor.check_files()
         for f in files:
             self._report_issue("Modified file detected", f)
