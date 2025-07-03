@@ -13,7 +13,6 @@ from system.uptime_monitor import UptimeMonitor
 from monitoring.user_activity_monitor import UserActivityMonitor
 from core.scanner import NetworkScanner
 
-
 class HomescannerCLI:
     def __init__(self, args: Namespace):
         self.args = args
