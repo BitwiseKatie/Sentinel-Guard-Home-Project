@@ -20,7 +20,6 @@ class HomescannerCLI:
         self.scanner = NetworkScanner()
         self.analyzer = LogAnalyzer()
         self.alert_manager = AlertManager()
-        self.file_monitor = FileMonitor()
         self.disk_monitor = DiskMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
