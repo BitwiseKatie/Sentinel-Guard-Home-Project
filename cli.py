@@ -20,6 +20,9 @@ class HomescannerCLI:
         self.scanner = NetworkScanner()
         self.analyzer = LogAnalyzer()
         self.alert_manager = AlertManager()
+        self.db = IncidentDatabase()
+        self.process_monitor = ProcessMonitor()
+        self.file_monitor = FileMonitor()
         self.disk_monitor = DiskMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
@@ -29,6 +32,10 @@ class HomescannerCLI:
             self.print_status()
         elif self.args.command == "uptime":
             self.print_uptime()
+        elif self.args.command == "disk":
+            self.check_disk()
+        elif self.args.command == "logs":
+            self.show_logs()
         elif self.args.command == "incidents":
             self.show_incidents()
         elif self.args.command == "scan":
