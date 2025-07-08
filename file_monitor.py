@@ -53,11 +53,6 @@ class FileMonitor:
         resolved = str(path.resolve())
         return any(resolved.startswith(excl) for excl in self.exclusions)
 
-    def _is_extension_tracked(self, path: Path) -> bool:
-        if not self.track_extensions:
-            return True
-        return path.suffix.lower().lstrip(".") in self.track_extensions
-
     def _is_size_allowed(self, path: Path) -> bool:
         if self.max_file_size_mb is None:
             return True
