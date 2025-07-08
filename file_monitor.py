@@ -49,7 +49,6 @@ class FileMonitor:
             self.hash_algorithm = "sha256"
 
 
-
     def _is_excluded(self, path: Path) -> bool:
         resolved = str(path.resolve())
         return any(resolved.startswith(excl) for excl in self.exclusions)
