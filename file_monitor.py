@@ -125,8 +125,6 @@ class FileMonitor:
             old = self.files_metadata.get(path)
             if not old:
                 changes.append(f"[NEW] {path}")
-            elif meta["hash"] != old["hash"]:
-                changes.append(f"[MODIFIED] {path}")
             elif self.include_timestamps and meta["mtime"] != old.get("mtime"):
                 changes.append(f"[TOUCHED] {path}")
 
