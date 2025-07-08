@@ -48,10 +48,19 @@ class FileMonitor:
             self.logger.warning(f"Unsupported hash algorithm '{self.hash_algorithm}', using sha256.")
             self.hash_algorithm = "sha256"
 
+    def _initialize_state(self):
+        self.logger.info(f"Initializing baseline file state from: {self.watch_dir}")
+        self.files_metadata = self._scan_directory()
+        self.logger.info(f"Tracking {len(self.files_metadata)} files in baseline.")
 
     def _is_excluded(self, path: Path) -> bool:
         resolved = str(path.resolve())
         return any(resolved.startswith(excl) for excl in self.exclusions)
+
+    def _is_extension_tracked(self, path: Path) -> bool:
+        if not self.track_extensions:
+            return True
+        return path.suffix.lower().lstrip(".") in self.track_extensions
 
     def _is_size_allowed(self, path: Path) -> bool:
         if self.max_file_size_mb is None:
@@ -125,6 +134,8 @@ class FileMonitor:
             old = self.files_metadata.get(path)
             if not old:
                 changes.append(f"[NEW] {path}")
+            elif meta["hash"] != old["hash"]:
+                changes.append(f"[MODIFIED] {path}")
             elif self.include_timestamps and meta["mtime"] != old.get("mtime"):
                 changes.append(f"[TOUCHED] {path}")
 
