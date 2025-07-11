@@ -73,14 +73,6 @@ class HomescannerCLI:
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT timestamp, description FROM incidents ORDER BY timestamp DESC LIMIT ?", (self.args.count,))
-            rows = cursor.fetchall()
-            if self.args.json:
-                print(json.dumps({"incidents": rows}, indent=2))
-            else:
-                for ts, desc in rows:
-                    print(f"{ts} | {desc}")
-        finally:
-            conn.close()
 
     async def manual_scan(self):
         results = []
