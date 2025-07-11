@@ -28,10 +28,6 @@ class HomescannerCLI:
     async def run(self):
         if self.args.command == "status":
             self.print_status()
-        elif self.args.command == "uptime":
-            self.print_uptime()
-        elif self.args.command == "disk":
-            self.check_disk()
         elif self.args.command == "logs":
             self.show_logs()
         elif self.args.command == "incidents":
