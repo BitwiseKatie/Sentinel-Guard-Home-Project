@@ -21,12 +21,19 @@ class HomescannerCLI:
         self.analyzer = LogAnalyzer()
         self.alert_manager = AlertManager()
         self.db = IncidentDatabase()
+        self.process_monitor = ProcessMonitor()
+        self.file_monitor = FileMonitor()
+        self.disk_monitor = DiskMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
 
     async def run(self):
         if self.args.command == "status":
             self.print_status()
+        elif self.args.command == "uptime":
+            self.print_uptime()
+        elif self.args.command == "disk":
+            self.check_disk()
         elif self.args.command == "logs":
             self.show_logs()
         elif self.args.command == "incidents":
@@ -66,6 +73,14 @@ class HomescannerCLI:
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT timestamp, description FROM incidents ORDER BY timestamp DESC LIMIT ?", (self.args.count,))
+            rows = cursor.fetchall()
+            if self.args.json:
+                print(json.dumps({"incidents": rows}, indent=2))
+            else:
+                for ts, desc in rows:
+                    print(f"{ts} | {desc}")
+        finally:
+            conn.close()
 
     async def manual_scan(self):
         results = []
@@ -95,6 +110,9 @@ class HomescannerCLI:
             self._report_issue("Disk warning", w)
             results.append(w)
 
+        if self.args.json:
+            print(json.dumps({"scan_results": results}, indent=2))
+
     def _report_issue(self, prefix, message):
         entry = f"{prefix}: {message}"
         self.logger.log(entry)
@@ -110,6 +128,10 @@ def build_parser():
     subparsers.add_parser("status")
     subparsers.add_parser("uptime")
     subparsers.add_parser("disk")
+
+    logs_parser = subparsers.add_parser("logs")
+    logs_parser.add_argument("--lines", type=int, default=20)
+    logs_parser.add_argument("--json", action="store_true")
 
     inc_parser = subparsers.add_parser("incidents")
     inc_parser.add_argument("--count", type=int, default=5)
