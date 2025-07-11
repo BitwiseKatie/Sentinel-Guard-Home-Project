@@ -21,7 +21,6 @@ class HomescannerCLI:
         self.analyzer = LogAnalyzer()
         self.alert_manager = AlertManager()
         self.db = IncidentDatabase()
-        self.process_monitor = ProcessMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
 
