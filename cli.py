@@ -96,9 +96,6 @@ class HomescannerCLI:
             self._report_issue("Disk warning", w)
             results.append(w)
 
-        if self.args.json:
-            print(json.dumps({"scan_results": results}, indent=2))
-
     def _report_issue(self, prefix, message):
         entry = f"{prefix}: {message}"
         self.logger.log(entry)
