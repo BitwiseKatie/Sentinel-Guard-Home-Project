@@ -112,10 +112,6 @@ def build_parser():
     subparsers.add_parser("uptime")
     subparsers.add_parser("disk")
 
-    logs_parser = subparsers.add_parser("logs")
-    logs_parser.add_argument("--lines", type=int, default=20)
-    logs_parser.add_argument("--json", action="store_true")
-
     inc_parser = subparsers.add_parser("incidents")
     inc_parser.add_argument("--count", type=int, default=5)
     inc_parser.add_argument("--json", action="store_true")
