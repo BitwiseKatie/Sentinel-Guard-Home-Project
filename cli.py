@@ -26,7 +26,7 @@ class HomescannerCLI:
         self.disk_monitor = DiskMonitor()
         self.uptime_monitor = UptimeMonitor()
         self.user_monitor = UserActivityMonitor()
-        
+    
     async def run(self):
         if self.args.command == "status":
             self.print_status()
