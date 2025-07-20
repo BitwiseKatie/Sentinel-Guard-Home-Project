@@ -16,6 +16,7 @@ class AlertManager:
         self.smtp_server = smtp.get("server", "")
         self.smtp_port = smtp.get("port", 587)
         self.smtp_user = smtp.get("user", "")
+        self.smtp_password = smtp.get("password", "")
         self.use_tls = smtp.get("use_tls", True)
 
         self.enabled = all([self.smtp_server, self.smtp_port, self.smtp_user, self.smtp_password, self.email_to])
@@ -46,6 +47,7 @@ class AlertManager:
         msg["From"] = self.email_from
         msg["To"] = self.email_to
         msg["Subject"] = subject
+        msg.attach(MIMEText(
             f"Timestamp: {datetime.utcnow().isoformat(sep=' ', timespec='seconds')} UTC\n\n{body}", "plain"
         ))
 
