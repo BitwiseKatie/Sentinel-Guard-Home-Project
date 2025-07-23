@@ -14,6 +14,8 @@ class AlertManager:
         self.email_to = smtp.get("to", "")
         self.email_from = smtp.get("user", "") or "noreply@example.com"
         self.smtp_server = smtp.get("server", "")
+        self.smtp_port = smtp.get("port", 587)
+        self.smtp_user = smtp.get("user", "")
         self.smtp_password = smtp.get("password", "")
         self.use_tls = smtp.get("use_tls", True)
 
@@ -31,6 +33,9 @@ class AlertManager:
             self.logger.error("Skipped sending alert: message was empty.")
             return
 
+        entry = f"[{severity.upper()}] {source} - {message}"
+        self.logger.warning(entry)
+
         if not self.enabled:
             self.logger.warning("Skipped sending alert: SMTP config incomplete or disabled.")
             return
@@ -40,6 +45,7 @@ class AlertManager:
     def _send_email(self, subject, body):
         msg = MIMEMultipart()
         msg["From"] = self.email_from
+        msg["To"] = self.email_to
         msg["Subject"] = subject
         msg.attach(MIMEText(
             f"Timestamp: {datetime.utcnow().isoformat(sep=' ', timespec='seconds')} UTC\n\n{body}", "plain"
