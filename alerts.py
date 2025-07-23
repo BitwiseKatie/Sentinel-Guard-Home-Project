@@ -32,7 +32,6 @@ class AlertManager:
             return
 
 
-
         if not self.enabled:
             self.logger.warning("Skipped sending alert: SMTP config incomplete or disabled.")
             return
