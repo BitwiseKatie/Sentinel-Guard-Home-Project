@@ -15,6 +15,7 @@ class AlertManager:
         self.email_from = smtp.get("user", "") or "noreply@example.com"
         self.smtp_server = smtp.get("server", "")
         self.smtp_port = smtp.get("port", 587)
+        self.smtp_user = smtp.get("user", "")
         self.smtp_password = smtp.get("password", "")
         self.use_tls = smtp.get("use_tls", True)
 
@@ -22,6 +23,9 @@ class AlertManager:
 
         self.logger = logging.getLogger("AlertManager")
         if not self.logger.hasHandlers():
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S"))
+            self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
     def send_alert(self, message, severity="warning", source="homescanner"):
