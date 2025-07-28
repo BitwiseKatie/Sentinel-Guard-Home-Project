@@ -13,7 +13,6 @@ class CorrelationEngine:
             self._pattern_post_login_file_activity
         ]
 
-
     def ingest_event(self, event):
         timestamp = event.get("timestamp")
         if not isinstance(timestamp, datetime):
