@@ -13,9 +13,6 @@ class CorrelationEngine:
             self._pattern_post_login_file_activity
         ]
 
-    def _hash_event(self, event):
-        base = f"{event['type']}|{event['source']}|{event['message']}"
-        return hashlib.sha256(base.encode()).hexdigest()
 
     def ingest_event(self, event):
         timestamp = event.get("timestamp")
