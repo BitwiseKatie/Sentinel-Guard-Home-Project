@@ -13,9 +13,6 @@ class CorrelationEngine:
             self._pattern_post_login_file_activity
         ]
 
-    def _now(self):
-        return datetime.utcnow()
-
     def _hash_event(self, event):
         base = f"{event['type']}|{event['source']}|{event['message']}"
         return hashlib.sha256(base.encode()).hexdigest()
