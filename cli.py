@@ -8,7 +8,6 @@ from core.alerts import AlertManager
 from core.database import IncidentDatabase
 from monitoring.process_monitor import ProcessMonitor
 from security.file_monitor import FileMonitor
-from monitoring.disk_monitor import DiskMonitor
 from system.uptime_monitor import UptimeMonitor
 from core.scanner import NetworkScanner
 
