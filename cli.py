@@ -8,7 +8,9 @@ from core.alerts import AlertManager
 from core.database import IncidentDatabase
 from monitoring.process_monitor import ProcessMonitor
 from security.file_monitor import FileMonitor
+from monitoring.disk_monitor import DiskMonitor
 from system.uptime_monitor import UptimeMonitor
+from monitoring.user_activity_monitor import UserActivityMonitor
 from core.scanner import NetworkScanner
 
 class HomescannerCLI:
@@ -28,10 +30,14 @@ class HomescannerCLI:
     async def run(self):
         if self.args.command == "status":
             self.print_status()
+        elif self.args.command == "uptime":
+            self.print_uptime()
         elif self.args.command == "disk":
             self.check_disk()
         elif self.args.command == "logs":
             self.show_logs()
+        elif self.args.command == "incidents":
+            self.show_incidents()
         elif self.args.command == "scan":
             await self.manual_scan()
         else:
@@ -103,6 +109,9 @@ class HomescannerCLI:
         for w in warnings:
             self._report_issue("Disk warning", w)
             results.append(w)
+
+        if self.args.json:
+            print(json.dumps({"scan_results": results}, indent=2))
 
     def _report_issue(self, prefix, message):
         entry = f"{prefix}: {message}"
